@@ -1,5 +1,115 @@
-cmake_minimum_required(VERSION 3.24)
+set_property(GLOBAL PROPERTY USE FOLDERS ON)
+
+if (WIN32)
+    cmake_minimum_required(VERSION 3.24)
+else (WIN32)
+    if (APPLE)
+        cmake_minimum_required(VERSION 3.24)
+    else (APPLE)
+        cmake_minimum_required(VERSION 3.24)
+    endif (APPLE)
+endif (WIN32)
+
+SET(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "possible configurations" FORCE)
 
 project(c815)
-
 set(CMAKE_CXX_STANDARD 17)
+
+IF (UNIX)
+    FIND_PACKAGE(X11)
+    FIND_LIBRARY(MATH_LIBRARY m)
+ENDIF (UNIX)
+
+OPTION(BUILD_MEMS "build mems model" ON)
+
+SET(CMAKE_DEBUG_POSTFIX "d")
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+# FIND_PACKAGE(Config)
+
+IF ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+    FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin ${CMAKE_BINARY_DIR}/lib)
+ENDIF ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+
+IF (UNIX AND NOT WIN32 AND NOT APPLE)
+    IF (CMAKE_SIZEOF_VOID_P MATCHES "8")
+        SET(LIB_POSTFIX "64" CACHE STRING "suffix for 32/64 dir placement")
+        MARK_AS_ADVANCED(LIB_POSTFIX)
+    ENDIF (CMAKE_SIZEOF_VOID_P MATCHES "8")
+ENDIF (UNIX AND NOT WIN32 AND NOT APPLE)
+IF (NOT DEFINED LIB_POSTFIX)
+    SET(LIB_POSTFIX "")
+ENDIF (NOT DEFINED LIB_POSTFIX)
+
+SET(OUTPUT_BINDIR ${PROJECT_BINARY_DIR}/bin)
+file(MAKE_DIRECTORY ${OUTPUT_BINDIR})
+SET(EXECUTABLE_OUTPUT_PATH ${OUTPUT_BINDIR})
+
+SET(OUTPUT_LIBDIR ${PROJECT_BINARY_DIR}/lib)
+file(MAKE_DIRECTORY ${OUTPUT_LIBDIR})
+SET(LIBRARY_OUTPUT_PATH ${OUTPUT_LIBDIR})
+
+SET(OUTPUT_PTLDIR ${PROJECT_BINARY_DIR}/ptl)
+file(MAKE_DIRECTORY ${OUTPUT_PTLDIR})
+
+IF (WIN32)
+    file(MAKE_DIRECTORY ${OUTPUT_BINDIR}/Debug)
+    file(MAKE_DIRECTORY ${OUTPUT_BINDIR}/Debug/Config)
+    file(MAKE_DIRECTORY ${OUTPUT_BINDIR}/Debug/data)
+    file(MAKE_DIRECTORY ${OUTPUT_BINDIR}/Debug/dll)
+    file(MAKE_DIRECTORY ${OUTPUT_BINDIR}/Debug/log)
+    file(MAKE_DIRECTORY ${OUTPUT_BINDIR}/Release)
+    file(MAKE_DIRECTORY ${OUTPUT_BINDIR}/Release/Config)
+    file(MAKE_DIRECTORY ${OUTPUT_BINDIR}/Release/data)
+    file(MAKE_DIRECTORY ${OUTPUT_BINDIR}/Release/dll)
+    file(MAKE_DIRECTORY ${OUTPUT_BINDIR}/Release/log)
+ELSE (WIN32)
+    file(MAKE_DIRECTORY ${OUTPUT_BINDIR}/Config)
+    file(MAKE_DIRECTORY ${OUTPUT_BINDIR}/data)
+    file(MAKE_DIRECTORY ${OUTPUT_BINDIR}/dll)
+    file(MAKE_DIRECTORY ${OUTPUT_BINDIR}/log)
+ENDIF (WIN32)
+
+set(INSTALL ${PROJECT_BINARY_DIR}/install)
+set(INCLUDE_DIR ${INSTALL}/include)
+set(LIBRARY_DIR ${INSTALL}/lib)
+file(MAKE_DIRECTORY ${INSTALL})
+file(MAKE_DIRECTORY ${INCLUDE_DIR})
+file(MAKE_DIRECTORY ${LIBRARY_DIR})
+file(MAKE_DIRECTORY ${LIBRARY_DIR}/Debug)
+file(MAKE_DIRECTORY ${LIBRARY_DIR}/Release)
+
+################################################################################
+# mems algorithm conifg
+SET(MEMS_OUTPUT_DIR ${PROJECT_BINARY_DIR}/mems)
+file(MAKE_DIRECTORY ${MEMS_OUTPUT_DIR}/Debug)
+file(MAKE_DIRECTORY ${MEMS_OUTPUT_DIR}/Debug/Config)
+file(MAKE_DIRECTORY ${MEMS_OUTPUT_DIR}/Debug/log)
+file(MAKE_DIRECTORY ${MEMS_OUTPUT_DIR}/Release)
+file(MAKE_DIRECTORY ${MEMS_OUTPUT_DIR}/Release/Config)
+file(MAKE_DIRECTORY ${MEMS_OUTPUT_DIR}/Release/log)
+
+IF (WIN32)
+    IF (MSVC)
+        # This option is to enable the /MP switch for Visual Studio 2005 and above compilers
+        OPTION(WIN32_USE_MP "Set to ON to build GraphPlatformFeatures with the /MP option (Visual Studio 2008 and above)." OFF)
+        MARK_AS_ADVANCED(WIN32_USE_MP)
+        IF (WIN32_USE_MP)
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+        ENDIF (WIN32_USE_MP)
+    ENDIF (MSVC)
+ENDIF (WIN32)
+
+SET(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} CACHE STRING "You may add additional search paths here. Use ; to separate multiple paths.")
+SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} CACHE STRING "You may add additional search paths here. Use ; to separate multiple paths.")
+
+SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} CACHE STRING "(EXPERIMENTAL) You may add additional search paths here. Use ; to separate multiple paths.")
+
+OPTION(LIBRARY_LINK_MODE "Set to ON to build library for dynamic linking.  Use OFF for static." ON)
+IF (LIBRARY_LINK_MODE)
+    SET(LIBRARY_LINK_MODE_VALUE "SHARED")
+ELSE (LIBRARY_LINK_MODE)
+    SET(LIBRARY_LINK_MODE_VALUE "STATIC")
+ENDIF (LIBRARY_LINK_MODE)
+
+add_subdirectory(TimeUtils)
+add_subdirectory(test)
