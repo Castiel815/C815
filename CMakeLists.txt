@@ -113,3 +113,4 @@ ENDIF (LIBRARY_LINK_MODE)
 
 add_subdirectory(TimeUtils)
 add_subdirectory(test)
+add_subdirectory(SQLConnect)

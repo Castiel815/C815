@@ -1,0 +1,6 @@
+#ifndef SQLCONNECT_LIBRARY_H
+#define SQLCONNECT_LIBRARY_H
+
+void hello();
+
+#endif //SQLCONNECT_LIBRARY_H
