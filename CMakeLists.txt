@@ -1,4 +1,5 @@
 set_property(GLOBAL PROPERTY USE FOLDERS ON)
+add_definitions(-DUNICODE -D_UNICODE)
 
 if (WIN32)
     cmake_minimum_required(VERSION 3.24)
